@@ -9,10 +9,32 @@ POLARITY_DATA_DIR = os.path.join('polarityData', 'rt-polaritydata')
 RT_POLARITY_POS_FILE = os.path.join(POLARITY_DATA_DIR, 'rt-polarity-pos.txt')
 RT_POLARITY_NEG_FILE = os.path.join(POLARITY_DATA_DIR, 'rt-polarity-neg.txt')
 
+
+
+#start preprocess_tweet
+def preprocessTweet(tweet):
+    # process the tweets
+ 
+    #remove punctuation
+    tweet = re.sub("[^A-Za-z ]", "", tweet)
+    #Convert to lower case
+    tweet = tweet.lower()
+    #Convert www.* or https?://* to URL
+    tweet = re.sub('((www\.[\s]+)|(https?://[^\s]+))','URL',tweet)
+    #Convert @username to AT_USER
+    tweet = re.sub('@[^\s]+','AT_USER',tweet)
+    #Remove additional white spaces
+    tweet = re.sub('[\s]+', ' ', tweet)
+    #Replace #word with word
+    tweet = re.sub(r'#([^\s]+)', r'\1', tweet)
+    #trim
+    tweet = tweet.strip('\'"')
+    return tweet
+#end
+
 def evaluate_features(feature_select):
 	posFeatures = []
 	negFeatures = []
-	#http://stackoverflow.com/questions/367155/splitting-a-string-into-words-and-punctuation
 	#breaks up the sentences into lists of individual words (as selected by the input mechanism) and appends 'pos' or 'neg' after each list
 	with open(RT_POLARITY_POS_FILE, 'r') as posSentences:
 		for i in posSentences:
@@ -150,7 +172,7 @@ def index():
 @app.route('/api', methods=['GET','POST'])
 def sentiment():
 	sentence = request.values.get('text')
-	return sentence
+	preprocessTweet(sentence)
 	fname = "naivebayes.pickle"
 	if os.path.isfile(fname):
 		#print "Loading saved classifier.."
